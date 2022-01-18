@@ -523,9 +523,7 @@ val stream :
   ?status:[< status ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-  request ->
-  (response -> unit) ->
-  response
+    request -> (response -> unit) -> response
 (** Same as {!Dream.val-respond}, but calls {!Dream.set_stream} internally to
     prepare the response for stream writing, and then runs the callback
     asynchronously to do it. See example
@@ -541,7 +539,7 @@ val stream :
 
 val websocket :
   ?headers:(string * string) list ->
-    (response -> unit promise) -> response
+    request -> (response -> unit) -> response
 (** Creates a fresh [101 Switching Protocols] response. Once this response is
     returned to Dream's HTTP layer, the callback is passed a new
     {!type-websocket}, and the application can begin using it. See example

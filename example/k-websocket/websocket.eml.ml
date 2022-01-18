@@ -27,11 +27,11 @@ let () =
         Dream.html home);
 
     Dream.get "/websocket"
-      (fun _ ->
-        Dream.websocket (fun response ->
-          match%lwt Dream.read response with
+      (fun request ->
+        Dream.websocket request (fun response ->
+          match Dream.read response with
           | Some "Hello?" ->
-            let%lwt () = Dream.write response "Good-bye!" in
+            Dream.write response "Good-bye!";
             Dream.close response
           | _ ->
             Dream.close response));

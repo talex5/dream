@@ -115,6 +115,7 @@ let complete_message id =
 (* TODO Take care to pass around the request Lwt.key in async, etc. *)
 (* TODO Test client complete racing against a stream. *)
 let handle_over_websocket make_context schema subscriptions request response =
+  Lwt_eio.Promise.await_lwt @@
   let rec loop inited =
     match%lwt Message.read response with
     | None ->
@@ -279,6 +280,7 @@ let graphql make_context schema = fun request ->
     | Some "websocket", Some "graphql-transport-ws" ->
       Helpers.websocket
         ~headers:["Sec-WebSocket-Protocol", "graphql-transport-ws"]
+        request
         (handle_over_websocket make_context schema (Hashtbl.create 16) request)
     | _ ->
       log.warning (fun log -> log ~request "Upgrade: websocket header missing");
