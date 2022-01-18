@@ -633,6 +633,8 @@ let serve_with_details
     ~builtins
     user's_dream_handler =
 
+  Switch.run @@ fun sw ->
+
   (* TODO DOC *)
   (* https://letsencrypt.org/docs/certificates-for-localhost/ *)
 
@@ -673,10 +675,10 @@ let serve_with_details
   let httpaf_connection_handler client_address socket =
     Lwt.catch
       (fun () ->
-        httpaf_connection_handler client_address socket)
+         httpaf_connection_handler client_address socket)
       (fun exn ->
-        tls_error_handler client_address exn;
-        Lwt.return_unit)
+         tls_error_handler ~sw client_address exn;
+         Lwt.return_unit)
   in
 
   (* Look up the low-level address corresponding to the interface. Hopefully,
@@ -687,21 +689,19 @@ let serve_with_details
     Printf.ksprintf failwith "Dream.%s: no interface with address %s"
       caller_function_for_error_messages interface
   | address::_ ->
-  let listen_address = Lwt_unix.(address.ai_addr) in
+    let listen_address = Lwt_unix.(address.ai_addr) in
 
 
-  (* Bring up the HTTP server. Wait for the server to actually get started.
-     Then, wait for the ~stop promise. If the ~stop promise ever resolves, stop
-     the server. *)
-  let%lwt server =
-    Lwt_io.establish_server_with_client_socket
-      listen_address
-      httpaf_connection_handler in
+    (* Bring up the HTTP server. Wait for the server to actually get started.
+       Then, wait for the ~stop promise. If the ~stop promise ever resolves, stop
+       the server. *)
+    let%lwt server =
+      Lwt_io.establish_server_with_client_socket
+        listen_address
+        httpaf_connection_handler in
 
-  let%lwt () = stop in
-  Lwt_io.shutdown_server server
-
-
+    let%lwt () = stop in
+    Lwt_io.shutdown_server server
 
 let is_localhost interface =
   interface = "localhost" || interface = "127.0.0.1"
