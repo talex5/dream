@@ -501,7 +501,7 @@ val redirect :
   ?status:[< redirection ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-    request -> string -> response promise
+    request -> string -> response
 (** Creates a new {!type-response}. Adds a [Location:] header with the given
     string. The default status code is [303 See Other], for a temporary
     redirection. Use [~status:`Moved_Permanently] or [~code:301] for a permanent
@@ -1731,7 +1731,7 @@ val graphiql : ?default_query:string -> string -> handler
 val sql_pool : ?size:int -> string -> middleware
 (** Makes an SQL connection pool available to its inner handler. *)
 
-val sql : request -> (Caqti_lwt.connection -> 'a promise) -> 'a promise
+val sql : request -> (Caqti_lwt.connection -> 'a promise) -> 'a
 (** Runs the callback with a connection from the SQL pool. See example
     {{:https://github.com/aantron/dream/tree/master/example/h-sql#files}
     [h-sql]}.

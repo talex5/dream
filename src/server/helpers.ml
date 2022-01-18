@@ -89,7 +89,7 @@ let redirect ?status ?code ?headers _request location =
   let response =
     Message.response ?status ?code ?headers Stream.empty Stream.null in
   Message.set_header response "Location" location;
-  Lwt.return response
+  response
 
 let stream ?status ?code ?headers callback =
   let reader, writer = Stream.pipe () in

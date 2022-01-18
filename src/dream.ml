@@ -265,7 +265,7 @@ let graphiql = Graphql.graphiql
 (* SQL *)
 
 let sql_pool = Sql.sql_pool
-let sql = Sql.sql
+let sql req fn = Lwt_eio.Promise.await_lwt (Sql.sql req fn)
 
 
 

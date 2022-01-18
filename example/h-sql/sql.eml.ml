@@ -1,3 +1,5 @@
+open Eio.Std
+
 module type DB = Caqti_lwt.CONNECTION
 module R = Caqti_request
 module T = Caqti_type
@@ -7,7 +9,9 @@ let list_comments =
     R.collect T.unit T.(tup2 int string)
       "SELECT id, text FROM comment" in
   fun (module Db : DB) ->
+    traceln "list...";
     let%lwt comments_or_error = Db.collect_list query () in
+    traceln "ok...";
     Caqti_lwt.or_fail comments_or_error
 
 let add_comment =
@@ -40,13 +44,13 @@ let () =
   @@ Dream.router [
 
     Dream.get "/" (fun request ->
-      let%lwt comments = Dream.sql request list_comments in
+      let comments = Dream.sql request list_comments in
       Dream.html (render comments request));
 
     Dream.post "/" (fun request ->
-      match%lwt Dream.form request with
+      match Dream.form request with
       | `Ok ["text", text] ->
-        let%lwt () = Dream.sql request (add_comment text) in
+        Dream.sql request (add_comment text);
         Dream.redirect request "/"
       | _ ->
         Dream.empty `Bad_Request);
