@@ -20,12 +20,10 @@ type 'a back_end = {
 }
 
 let middleware field back_end = fun inner_handler request ->
-  Lwt_eio.Promise.await_lwt begin
-    let%lwt session = back_end.load request in
-    Message.set_field request field session;
-    let response = inner_handler request in
-    back_end.send session request response
-  end
+  let session = Lwt_eio.Promise.await_lwt (back_end.load request) in
+  Message.set_field request field session;
+  let response = inner_handler request in
+  Lwt_eio.Promise.await_lwt (back_end.send session request response)
 
 let getter field request =
   match Message.field request field with
