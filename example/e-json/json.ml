@@ -10,10 +10,8 @@ let () =
 
     Dream.post "/"
       (fun request ->
-        let%lwt body = Dream.body request in
-
         let message_object =
-          body
+          Dream.body request
           |> Yojson.Safe.from_string
           |> message_object_of_yojson
         in
