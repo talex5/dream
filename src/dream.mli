@@ -1043,7 +1043,7 @@ type multipart_form =
     OWASP {i File Upload Cheat Sheet}} for security precautions for upload
     forms. *)
 
-val multipart : ?csrf:bool -> request -> multipart_form form_result promise
+val multipart : ?csrf:bool -> request -> multipart_form form_result
 (** Like {!Dream.form}, but also reads files, and [Content-Type:] must be
     [multipart/form-data]. The [<form>] tag and CSRF token can be generated in a
     template with
