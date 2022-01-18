@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 module Catch = Dream__server.Catch
 module Error_template = Dream__server.Error_template
@@ -264,7 +265,7 @@ let default_response = function
   | `Client ->
     Message.response ~status:`Bad_Request Stream.empty Stream.null
 
-let httpaf
+let httpaf ~sw
     user's_error_handler =
     fun client_address ?request error start_response ->
 
@@ -304,7 +305,7 @@ let httpaf
 
   Lwt.async begin fun () ->
     double_faults begin fun () ->
-      let%lwt response = user's_error_handler error in
+      let%lwt response = Lwt_eio.Promise.await_eio (Fibre.fork_promise ~sw (fun () -> user's_error_handler error)) in
 
       let response =
         match response with
@@ -324,7 +325,7 @@ let httpaf
 
 
 
-let h2
+let h2 ~sw
     user's_error_handler =
     fun client_address ?request error start_response ->
 
@@ -362,7 +363,7 @@ let h2
 
   Lwt.async begin fun () ->
     double_faults begin fun () ->
-      let%lwt response = user's_error_handler error in
+      let%lwt response = Lwt_eio.Promise.await_eio (Fibre.fork_promise ~sw (fun () -> user's_error_handler error)) in
 
       let response =
         match response with
@@ -387,7 +388,7 @@ let h2
    user code run by Dream is wrapped in Lwt.catch to catch all user errors.
    However, SSL protocol errors are not wrapped in any of these, so we add an
    edditional top-level handler to catch them. *)
-let tls
+let tls ~sw
     user's_error_handler client_address error =
 
   let error = {
@@ -403,12 +404,15 @@ let tls
 
   Lwt.async (fun () ->
     double_faults
-      (fun () -> Lwt.map ignore (user's_error_handler error))
+      (fun () ->
+        let response = Lwt_eio.Promise.await_eio (Fibre.fork_promise ~sw (fun () -> user's_error_handler error)) in
+        Lwt.map ignore response
+      )
       Lwt.return)
 
 
 
-let websocket
+let websocket ~sw
     user's_error_handler request response =
     fun socket error ->
 
@@ -434,7 +438,10 @@ let websocket
 
   Lwt.async (fun () ->
     double_faults
-      (fun () -> Lwt.map ignore (user's_error_handler error))
+      (fun () ->
+        let response = Lwt_eio.Promise.await_eio (Fibre.fork_promise ~sw (fun () -> user's_error_handler error)) in
+        Lwt.map ignore response
+      )
       Lwt.return)
 
 

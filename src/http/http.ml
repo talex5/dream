@@ -375,7 +375,7 @@ let wrap_handler ~sw
           forward_response response
         else begin
           let error_handler =
-            Error_handler.websocket user's_error_handler request response in
+            Error_handler.websocket ~sw user's_error_handler request response in
 
           let proceed () =
             Websocketaf.Server_connection.create_websocket
@@ -391,7 +391,7 @@ let wrap_handler ~sw
           |> function
           | Ok () -> Lwt.return_unit
           | Error error_string ->
-            let%lwt response =
+            let response =
               Error_handler.websocket_handshake
                 user's_error_handler request response error_string
             in
@@ -535,7 +535,7 @@ let no_tls ~sw = {
     Httpaf_lwt_unix.Server.create_connection_handler
       ?config:None
       ~request_handler:(wrap_handler ~sw false error_handler handler)
-      ~error_handler:(Error_handler.httpaf error_handler)
+      ~error_handler:(Error_handler.httpaf ~sw error_handler)
   end;
 }
 
@@ -549,14 +549,14 @@ let openssl ~sw = {
       Httpaf_lwt_unix.Server.SSL.create_connection_handler
         ?config:None
       ~request_handler:(wrap_handler ~sw true error_handler handler)
-      ~error_handler:(Error_handler.httpaf error_handler)
+      ~error_handler:(Error_handler.httpaf ~sw error_handler)
     in
 
     let h2_handler =
       H2_lwt_unix.Server.SSL.create_connection_handler
         ?config:None
       ~request_handler:(wrap_handler_h2 true error_handler handler)
-      ~error_handler:(Error_handler.h2 error_handler)
+      ~error_handler:(Error_handler.h2 ~sw error_handler)
     in
 
     let perform_tls_handshake =
@@ -607,7 +607,7 @@ let ocaml_tls ~sw = {
       ~certfile:certificate_file ~keyfile:key_file
       ?config:None
       ~request_handler:(wrap_handler ~sw true error_handler handler)
-      ~error_handler:(Error_handler.httpaf error_handler)
+      ~error_handler:(Error_handler.httpaf ~sw error_handler)
 }
 
 

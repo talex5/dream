@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 module Catch = Dream__server.Catch
 module Log = Dream__server.Log
@@ -38,18 +39,22 @@ val app :
     (Catch.error -> Message.response)
 
 val httpaf :
+  sw:Switch.t ->
   Catch.error_handler ->
     (Unix.sockaddr -> Httpaf.Server_connection.error_handler)
 
 val h2 :
+  sw:Switch.t ->
   Catch.error_handler ->
     (Unix.sockaddr -> H2.Server_connection.error_handler)
 
 val tls :
+  sw:Switch.t ->
   Catch.error_handler ->
     (Unix.sockaddr -> exn -> unit)
 
 val websocket :
+  sw:Switch.t ->
   Catch.error_handler ->
   Message.request ->
   Message.response ->
@@ -57,7 +62,7 @@ val websocket :
 
 val websocket_handshake :
   Catch.error_handler ->
-    (Message.request -> Message.response -> string -> Message.response Message.promise)
+    (Message.request -> Message.response -> string -> Message.response)
 
 
 
