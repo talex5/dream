@@ -149,10 +149,10 @@ let all_cookies = Cookie.all_cookies
 
 let body x = Lwt_eio.Promise.await_lwt (Message.body x)
 let set_body = Message.set_body
-let read = Message.read
-let write = Message.write
-let flush = Message.flush
-let close = Message.close
+let read body = Lwt_eio.Promise.await_lwt (Message.read body)
+let write ?kind response data = Lwt_eio.Promise.await_lwt (Message.write ?kind response data)
+let flush response = Lwt_eio.Promise.await_lwt (Message.flush response)
+let close ?code msg = Lwt_eio.Promise.await_lwt (Message.close ?code msg)
 type buffer = Stream.buffer
 type stream = Stream.stream
 let client_stream = Message.client_stream

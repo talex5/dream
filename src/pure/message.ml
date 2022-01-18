@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 (* Type abbreviations and modules used in defining the primary types *)
 
@@ -23,6 +24,7 @@ type client = {
   mutable method_ : Method.method_;
   mutable target : string;
   mutable version : int * int;
+  sw : Switch.t;
 }
 (* TODO Get rid of the version field completely? At least don't expose it in
    Dream. It is only used internally on the server side to add the right
@@ -66,6 +68,7 @@ let request
     ?(target = "/")
     ?(version = 1, 1)
     ?(headers = [])
+    ~sw
     client_stream
     server_stream =
 
@@ -80,6 +83,7 @@ let request
       method_;
       target;
       version;
+      sw;
     };
     headers;
     client_stream;
@@ -95,6 +99,9 @@ let target request =
 
 let version request =
   request.specific.version
+
+let switch request =
+  request.specific.sw
 
 let set_method_ request method_ =
   request.specific.method_ <- (method_ :> Method.method_)

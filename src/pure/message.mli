@@ -4,6 +4,8 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
+
 
 (* Note: this is not a stable API! *)
 
@@ -26,6 +28,7 @@ val request :
   ?target:string ->
   ?version:int * int ->
   ?headers:(string * string) list ->
+  sw:Switch.t ->
   Stream.stream ->
   Stream.stream ->
     request
@@ -33,6 +36,7 @@ val request :
 val method_ : request -> Method.method_
 val target : request -> string
 val version : request -> int * int
+val switch : request -> Switch.t
 val set_method_ : request -> [< Method.method_ ] -> unit
 val set_target : request -> string -> unit
 val set_version : request -> int * int -> unit

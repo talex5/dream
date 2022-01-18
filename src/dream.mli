@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 (** {1 Types}
 
@@ -522,7 +523,9 @@ val stream :
   ?status:[< status ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-    (response -> unit promise) -> response promise
+  request ->
+  (response -> unit) ->
+  response
 (** Same as {!Dream.val-respond}, but calls {!Dream.set_stream} internally to
     prepare the response for stream writing, and then runs the callback
     asynchronously to do it. See example
@@ -531,8 +534,8 @@ val stream :
 
     {[
       fun request ->
-        Dream.stream (fun response ->
-          let%lwt () = Dream.write response "foo" in
+        Dream.stream request (fun response ->
+          Dream.write response "foo";
           Dream.close_stream response)
     ]} *)
 
@@ -764,7 +767,7 @@ https://aantron.github.io/dream/#val-set_body
 
 (** {2 Streaming} *)
 
-val read : 'a message -> string option promise
+val read : 'a message -> string option
 (** Retrieves a body chunk. The chunk is not buffered, thus it can only be read
     once. See example
     {{:https://github.com/aantron/dream/tree/master/example/j-stream#files}
@@ -780,15 +783,15 @@ https://aantron.github.io/dream/#val-set_stream
 "]
 (**/**)
 
-val write : ?kind:[< `Text | `Binary ] -> response -> string -> unit promise
+val write : ?kind:[< `Text | `Binary ] -> response -> string -> unit
 (** Streams out the string. The promise is fulfilled when the response can
     accept more writes. *)
 (* TODO Document clearly which of the writing functions can raise exceptions. *)
 
-val flush : response -> unit promise
+val flush : response -> unit
 (** Flushes write buffers. Data is sent to the client. *)
 
-val close : ?code:int -> 'a message -> unit promise
+val close : ?code:int -> 'a message -> unit
 (** Finishes the response stream. *)
 (* TODO Fix comment. *)
 
@@ -857,7 +860,7 @@ val close_stream :
 
 (**/**)
 val write_buffer :
-  ?offset:int -> ?length:int -> response -> buffer -> unit promise
+  ?offset:int -> ?length:int -> response -> buffer -> unit
 [@@ocaml.deprecated
 "Use Dream.write_stream. See
 https://aantron.github.io/dream/#val-write_stream
@@ -1579,7 +1582,7 @@ https://aantron.github.io/dream/#type-stream
 (**/**)
 
 (**/**)
-val send : ?kind:[< `Text | `Binary ] -> response -> string -> unit promise
+val send : ?kind:[< `Text | `Binary ] -> response -> string -> unit
 [@@ocaml.deprecated
 "Use Dream.write. See
 https://aantron.github.io/dream/#val-write
@@ -1596,7 +1599,7 @@ https://aantron.github.io/dream/#val-write
     {{:https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType}
     MDN, [WebSocket.binaryType]}. *)
 
-val receive : response -> string option promise
+val receive : response -> string option
 [@@ocaml.deprecated
 "Use Dream.read. See
 https://aantron.github.io/dream/#val-read
@@ -1606,7 +1609,7 @@ https://aantron.github.io/dream/#val-read
 (**/**)
 
 (**/**)
-val close_websocket : ?code:int -> response -> unit promise
+val close_websocket : ?code:int -> response -> unit
 [@@ocaml.deprecated
 "Use Dream.close. See
 https://aantron.github.io/dream/#val-close
@@ -2460,8 +2463,9 @@ val request :
   ?target:string ->
   ?version:int * int ->
   ?headers:(string * string) list ->
-    string -> request
-(** [Dream.request body] creates a fresh request with the given body for
+  sw:Switch.t ->
+  string -> request
+(** [Dream.request ~sw body] creates a fresh request with the given body for
     testing. The optional arguments set the corresponding {{!requests} request
     fields}. *)
 

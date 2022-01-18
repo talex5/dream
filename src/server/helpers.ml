@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 module Formats = Dream_pure.Formats
 module Message = Dream_pure.Message
@@ -46,17 +47,17 @@ let set_https request https =
 
 
 
-let request ~client ~method_ ~target ~https ~version ~headers server_stream =
+let request ~sw ~client ~method_ ~target ~https ~version ~headers server_stream =
   let request =
     Message.request
-      ~method_ ~target ~version ~headers Stream.null server_stream in
+      ~sw ~method_ ~target ~version ~headers Stream.null server_stream in
   set_client request client;
   set_https request https;
   request
 
-let request_with_body ?method_ ?target ?version ?headers body =
+let request_with_body ?method_ ?target ?version ?headers ~sw body =
   Message.request
-    ?method_ ?target ?version ?headers Stream.null (Stream.string body)
+    ?method_ ?target ?version ?headers ~sw Stream.null (Stream.string body)
 
 
 
@@ -91,7 +92,8 @@ let redirect ?status ?code ?headers _request location =
   Message.set_header response "Location" location;
   response
 
-let stream ?status ?code ?headers callback =
+let stream ?status ?code ?headers request callback =
+  let sw = Message.switch request in
   let reader, writer = Stream.pipe () in
   let client_stream = Stream.stream reader Stream.no_writer
   and server_stream = Stream.stream Stream.no_reader writer in
@@ -99,9 +101,9 @@ let stream ?status ?code ?headers callback =
     Message.response ?status ?code ?headers client_stream server_stream in
   (* TODO Should set up an error handler for this. YES. *)
   (* TODO Make sure the request id is propagated to the callback. *)
-  let wrapped_callback _ = Lwt.async (fun () -> callback response) in
+  let wrapped_callback _ = Fibre.fork ~sw (fun () -> callback response) in
   Stream.ready server_stream ~close:wrapped_callback wrapped_callback;
-  Lwt.return response
+  response
 
 let websocket_field =
   Message.new_field

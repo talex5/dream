@@ -320,7 +320,7 @@ let wrap_handler ~sw
       Stream.stream body Stream.no_writer in
 
     let request : Message.request =
-      Helpers.request ~client ~method_ ~target ~https ~version ~headers body in
+      Helpers.request ~sw ~client ~method_ ~target ~https ~version ~headers body in
 
     (* Call the user's handler. If it raises an exception or returns a promise
        that rejects with an exception, pass the exception up to Httpaf. This
