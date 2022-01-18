@@ -27,7 +27,7 @@ let () =
 
     Dream.post "/"
       (fun request ->
-        match%lwt Dream.form request with
+        match Dream.form request with
         | `Ok ["message", message] ->
           Dream.html (show_form ~message request)
         | _ ->

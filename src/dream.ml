@@ -147,7 +147,7 @@ let all_cookies = Cookie.all_cookies
 
 (* Bodies *)
 
-let body = Message.body
+let body x = Lwt_eio.Promise.await_lwt (Message.body x)
 let set_body = Message.set_body
 let read = Message.read
 let write = Message.write
@@ -178,7 +178,7 @@ let origin_referrer_check = Origin_referrer_check.origin_referrer_check
 (* Forms *)
 
 type 'a form_result = 'a Form.form_result
-let form = Form.form ~now
+let form ?csrf x = Lwt_eio.Promise.await_lwt (Form.form ~now ?csrf x)
 type multipart_form = Upload.multipart_form
 let multipart = Upload.multipart ~now
 type part = Upload.part
