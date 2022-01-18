@@ -335,7 +335,8 @@ let wrap_handler ~sw
     Lwt.async begin fun () ->
       Lwt.catch begin fun () ->
         (* Do the big call. *)
-        let%lwt response = user's_dream_handler request in
+        let%lwt response = Lwt_eio.Promise.await_eio @@
+          Fibre.fork_promise ~sw (fun () -> user's_dream_handler request) in
 
         (* Extract the Dream response's headers. *)
 
@@ -411,7 +412,7 @@ let wrap_handler ~sw
 
 
 (* TODO Factor out what is in common between the http/af and h2 handlers. *)
-let wrap_handler_h2 _ = assert false
+let wrap_handler_h2 _ _ _ = assert false
 (*
 let wrap_handler_h2
     https
@@ -526,19 +527,19 @@ type tls_library = {
         unit Lwt.t;
 }
 
-let no_tls = {
+let no_tls ~sw = {
   create_handler = begin fun
       ~certificate_file:_ ~key_file:_
       ~handler
       ~error_handler ->
     Httpaf_lwt_unix.Server.create_connection_handler
       ?config:None
-      ~request_handler:(wrap_handler false error_handler handler)
+      ~request_handler:(wrap_handler ~sw false error_handler handler)
       ~error_handler:(Error_handler.httpaf error_handler)
   end;
 }
 
-let openssl = {
+let openssl ~sw = {
   create_handler = begin fun
       ~certificate_file ~key_file
       ~handler
@@ -547,7 +548,7 @@ let openssl = {
     let httpaf_handler =
       Httpaf_lwt_unix.Server.SSL.create_connection_handler
         ?config:None
-      ~request_handler:(wrap_handler true error_handler handler)
+      ~request_handler:(wrap_handler ~sw true error_handler handler)
       ~error_handler:(Error_handler.httpaf error_handler)
     in
 
@@ -597,7 +598,7 @@ let openssl = {
 }
 
 (* TODO LATER Add ALPN + HTTP/2.0 with ocaml-tls, too. *)
-let ocaml_tls = {
+let ocaml_tls ~sw = {
   create_handler = fun
       ~certificate_file ~key_file
       ~handler
@@ -605,7 +606,7 @@ let ocaml_tls = {
     Httpaf_lwt_unix.Server.TLS.create_connection_handler_with_default
       ~certfile:certificate_file ~keyfile:key_file
       ?config:None
-      ~request_handler:(wrap_handler true error_handler handler)
+      ~request_handler:(wrap_handler ~sw true error_handler handler)
       ~error_handler:(Error_handler.httpaf error_handler)
 }
 
@@ -717,6 +718,8 @@ let serve_with_maybe_https
     ~builtins
     user's_dream_handler =
 
+  Switch.run @@ fun sw ->
+  Lwt_eio.Promise.await_lwt begin
   try%lwt
     (* This check will at least catch secrets like "foo" when used on a public
        interface. *)
@@ -732,7 +735,7 @@ let serve_with_maybe_https
     | `No ->
       serve_with_details
         caller_function_for_error_messages
-        no_tls
+        (no_tls ~sw)
         ~interface
         ~port
         ~stop
@@ -789,8 +792,8 @@ let serve_with_maybe_https
 
       let tls_library =
         match tls_library with
-        | `OpenSSL -> openssl
-        | `OCaml_TLS -> ocaml_tls
+        | `OpenSSL -> openssl ~sw
+        | `OCaml_TLS -> ocaml_tls ~sw
       in
 
       match certificate_and_key with
@@ -846,7 +849,7 @@ let serve_with_maybe_https
     backtrace |> Log.iter_backtrace (fun line ->
       log.error (fun log -> log "%s" line));
     raise exn
-
+end
 
 
 let default_interface = "localhost"
@@ -960,7 +963,6 @@ let run
     Eio_main.run @@ fun env ->
     begin
       Lwt_eio.with_event_loop ~clock:(Eio.Stdenv.clock env) @@ fun () ->
-      Lwt_eio.Promise.await_lwt @@
       serve_with_maybe_https
         "run"
         ~interface

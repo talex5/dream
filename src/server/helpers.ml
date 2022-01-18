@@ -64,20 +64,19 @@ let html ?status ?code ?headers body =
   let response =
     Message.response ?status ?code ?headers (Stream.string body) Stream.null in
   Message.set_header response "Content-Type" Formats.text_html;
-  Lwt.return response
+  response
 
 let json ?status ?code ?headers body =
   let response =
     Message.response ?status ?code ?headers (Stream.string body) Stream.null in
   Message.set_header response "Content-Type" Formats.application_json;
-  Lwt.return response
+  response
 
 let response_with_body ?status ?code ?headers body =
   Message.response ?status ?code ?headers (Stream.string body) Stream.null
 
 let respond ?status ?code ?headers body =
   Message.response ?status ?code ?headers (Stream.string body) Stream.null
-  |> Lwt.return
 
 (* TODO Actually use the request and extract the site prefix. *)
 let redirect ?status ?code ?headers _request location =
@@ -128,7 +127,7 @@ let websocket ?headers callback =
   (* TODO Make sure the request id is propagated to the callback. *)
   let wrapped_callback _ = Lwt.async (fun () -> callback response) in
   Stream.ready server_stream ~close:wrapped_callback wrapped_callback;
-  Lwt.return response
+  response
 
 let empty ?headers status =
   respond ?headers ~status ""

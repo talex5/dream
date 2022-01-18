@@ -370,7 +370,7 @@ let test ?(prefix = "") handler request =
     @@ handler
   in
 
-  Lwt_main.run (app request)
+  app request
 
 let sort_headers = Message.sort_headers
 let echo = Echo.echo

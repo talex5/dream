@@ -471,7 +471,7 @@ val respond :
   ?status:[< status ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-    string -> response promise
+    string -> response
 (** Same as {!Dream.val-response}, but the new {!type-response} is wrapped in a
     {!type-promise}. *)
 
@@ -493,7 +493,7 @@ val json :
   ?status:[< status ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-    string -> response promise
+    string -> response
 (** Same as {!Dream.respond}, but adds [Content-Type: application/json]. See
     {!Dream.application_json}. *)
 
@@ -515,7 +515,7 @@ val redirect :
 
 val empty :
   ?headers:(string * string) list ->
-    status -> response promise
+    status -> response
 (** Same as {!Dream.val-response} with the empty string for a body. *)
 
 val stream :
@@ -538,7 +538,7 @@ val stream :
 
 val websocket :
   ?headers:(string * string) list ->
-    (response -> unit promise) -> response promise
+    (response -> unit promise) -> response
 (** Creates a fresh [101 Switching Protocols] response. Once this response is
     returned to Dream's HTTP layer, the callback is passed a new
     {!type-websocket}, and the application can begin using it. See example
@@ -2006,7 +2006,7 @@ type error = {
     [true].
     }} *)
 
-type error_handler = error -> response option promise
+type error_handler = error -> response option
 (** Error handlers log errors and convert them into responses. Ignore if using
     {!Dream.error_template}.
 
@@ -2022,7 +2022,7 @@ type error_handler = error -> response option promise
 (* TODO Get rid of the option? *)
 
 val error_template :
-  (error -> string -> response -> response promise) -> error_handler
+  (error -> string -> response -> response) -> error_handler
 (** Builds an {!error_handler} from a template. See example
     {{:https://github.com/aantron/dream/tree/master/example/9-error#files}
     [9-error]} \[{{:http://dream.as/9-error} playground}\].
@@ -2067,7 +2067,7 @@ val debug_error_handler : error_handler
 (** An {!error_handler} for showing extra information about requests and
     exceptions, for use during development. *)
 
-val catch : (error -> response promise) -> middleware
+val catch : (error -> response) -> middleware
 (** Forwards exceptions, rejections, and [4xx], [5xx] responses from the
     application to the error handler. See {!section-errors}. *)
 (* TODO Error handler should not return an option, and then the type can be
@@ -2145,7 +2145,7 @@ val serve :
   ?certificate_file:string ->
   ?key_file:string ->
   ?builtins:bool ->
-    handler -> unit promise
+    handler -> unit
 (** Like {!Dream.run}, but returns a promise that does not resolve until the
     server stops listening, instead of calling
     {{:https://ocsigen.org/lwt/latest/api/Lwt_main#VALrun} [Lwt_main.run]}.
