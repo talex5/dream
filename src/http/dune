@@ -19,8 +19,6 @@
   lwt.unix
   lwt_eio
   eio_main
-  lwt_ssl
-  ssl
   dream-httpaf.websocketaf
  )
  (preprocess (pps lwt_ppx))

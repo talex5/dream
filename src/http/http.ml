@@ -539,7 +539,9 @@ let no_tls ~sw = {
   end;
 }
 
-let openssl ~sw = {
+let openssl ~sw:_ = failwith "https://github.com/savonet/ocaml-ssl/issues/76"
+(*
+{
   create_handler = begin fun
       ~certificate_file ~key_file
       ~handler
@@ -596,6 +598,7 @@ let openssl ~sw = {
           assert false
   end;
 }
+*)
 
 (* TODO LATER Add ALPN + HTTP/2.0 with ocaml-tls, too. *)
 let ocaml_tls ~sw = {
