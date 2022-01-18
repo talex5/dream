@@ -54,7 +54,7 @@ type response = server message
 
 (* Functions of messages *)
 
-type handler = request -> response Lwt.t
+type handler = request -> response
 type middleware = handler -> handler
 
 

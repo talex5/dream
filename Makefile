@@ -1,7 +1,7 @@
 .PHONY : build
 
 default:
-	@dune build
+	@dune build @check
 
 build :
 	@dune build -p dream-pure,dream-httpaf,dream --no-print-directory @install

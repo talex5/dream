@@ -57,7 +57,7 @@ val websocket :
 
 val websocket_handshake :
   Catch.error_handler ->
-    (Message.request -> Message.response -> string -> Message.response Lwt.t)
+    (Message.request -> Message.response -> string -> Message.response)
 
 
 

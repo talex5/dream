@@ -19,7 +19,7 @@ and response = server message
 
 (** The remaining three types are for building up Web apps. *)
 
-and handler = request -> response promise
+and handler = request -> response
 (** Handlers are asynchronous functions from requests to responses. Example
     {{:https://github.com/aantron/dream/tree/master/example/1-hello#files}
     [1-hello]} \[{{:http://dream.as/1-hello} playground}\] shows the simplest
@@ -479,7 +479,7 @@ val html :
   ?status:[< status ] ->
   ?code:int ->
   ?headers:(string * string) list ->
-    string -> response promise
+    string -> response
 (** Same as {!Dream.respond}, but adds [Content-Type: text/html; charset=utf-8].
     See {!Dream.text_html}.
 

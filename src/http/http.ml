@@ -4,6 +4,7 @@
    Copyright 2021 Anton Bachin *)
 
 
+open Eio.Std
 
 module Catch = Dream__server.Catch
 module Content_length = Dream__server.Content_length
@@ -274,7 +275,7 @@ let websocket_handler response socket =
    that ordinarily shouldn't be relied on by the user - this is just our last
    chance to tell the user that something is wrong with their app. *)
 (* TODO Rename conn like in the body branch. *)
-let wrap_handler
+let wrap_handler ~sw
     https
     (user's_error_handler : Catch.error_handler)
     (user's_dream_handler : Message.handler) =
@@ -410,6 +411,8 @@ let wrap_handler
 
 
 (* TODO Factor out what is in common between the http/af and h2 handlers. *)
+let wrap_handler_h2 _ = assert false
+(*
 let wrap_handler_h2
     https
     (_user's_error_handler : Catch.error_handler)
@@ -503,6 +506,7 @@ let wrap_handler_h2
   in
 
   httpaf_request_handler
+*)
 
 
 
