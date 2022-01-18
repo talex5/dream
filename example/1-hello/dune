@@ -1,5 +1,5 @@
 (executable
  (name hello)
- (libraries dream))
+ (libraries dream eio_main lwt_eio))
 
 (data_only_dirs _esy esy.lock lib node_modules)

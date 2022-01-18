@@ -953,7 +953,10 @@ let run
   end;
 
   try
-    Lwt_main.run begin
+    Eio_main.run @@ fun env ->
+    begin
+      Lwt_eio.with_event_loop ~clock:(Eio.Stdenv.clock env) @@ fun () ->
+      Lwt_eio.Promise.await_lwt @@
       serve_with_maybe_https
         "run"
         ~interface
