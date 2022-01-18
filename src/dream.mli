@@ -1501,14 +1501,14 @@ val mime_lookup : string -> (string * string) list
 val session : string -> request -> string option
 (** Value from the request's session. *)
 
-val put_session : string -> string -> request -> unit promise
+val put_session : string -> string -> request -> unit
 (** Mutates a value in the request's session. The back end may commit the value
     to storage immediately, so this function returns a promise. *)
 
 val all_session_values : request -> (string * string) list
 (** Full session dictionary. *)
 
-val invalidate_session : request -> unit promise
+val invalidate_session : request -> unit
 (** Invalidates the request's session, replacing it with a fresh, empty
     pre-session. *)
 

@@ -58,8 +58,8 @@ type session = {
 }
 
 type operations = {
-  put : string -> string -> unit Lwt.t;
-  invalidate : unit -> unit Lwt.t;
+  put : string -> string -> unit;
+  invalidate : unit -> unit;
   mutable dirty : bool;
 }
 
@@ -126,14 +126,12 @@ struct
     session.payload
     |> List.remove_assoc name
     |> fun dictionary -> (name, value)::dictionary
-    |> fun dictionary -> session.payload <- dictionary;
-    Lwt.return_unit
+    |> fun dictionary -> session.payload <- dictionary
 
   let invalidate hash_table ~now lifetime operations session =
     Hashtbl.remove hash_table !session.id;
     session := create hash_table (now () +. lifetime);
-    operations.dirty <- true;
-    Lwt.return_unit
+    operations.dirty <- true
 
   let operations ~now hash_table lifetime session dirty =
     let rec operations = {
@@ -215,13 +213,11 @@ struct
     |> List.remove_assoc name
     |> fun dictionary -> (name, value)::dictionary
     |> fun dictionary -> session.payload <- dictionary;
-    operations.dirty <- true;
-    Lwt.return_unit
+    operations.dirty <- true
 
   let invalidate ~now lifetime operations session =
     session := create (now () +. lifetime);
-    operations.dirty <- true;
-    Lwt.return_unit
+    operations.dirty <- true
 
   let operations ~now lifetime session dirty =
     let rec operations = {
